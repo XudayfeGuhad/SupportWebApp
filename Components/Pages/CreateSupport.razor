@@ -1,0 +1,70 @@
+
+@page "/create-support"
+@rendermode InteractiveServer
+
+@using SupportWebApp.Models
+@using SupportWebApp.Services
+@using Microsoft.AspNetCore.Components.Forms
+
+@inject CosmosDbService CosmosDbService
+
+<h3>Opret supporthenvendelse</h3>
+
+<EditForm Model="@message"
+          OnValidSubmit="CreateSupportMessage"
+          FormName="CreateSupportForm">
+
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>Kategori</label>
+        <InputText @bind-Value="message.Category" />
+    </div>
+
+    <div>
+        <label>Navn</label>
+        <InputText @bind-Value="message.Name" />
+    </div>
+
+    <div>
+        <label>Email</label>
+        <InputText @bind-Value="message.Email" />
+    </div>
+
+    <div>
+        <label>Telefon</label>
+        <InputText @bind-Value="message.Phone" />
+    </div>
+
+    <div>
+        <label>Emne</label>
+        <InputText @bind-Value="message.Subject" />
+    </div>
+
+    <div>
+        <label>Beskrivelse</label>
+        <InputTextArea @bind-Value="message.Description" />
+    </div>
+
+    <button type="submit">Opret henvendelse</button>
+
+</EditForm>
+
+@if (created)
+{
+    <p>Henvendelsen er oprettet.</p>
+}
+
+@code {
+    private SupportMessage message = new();
+    private bool created = false;
+
+    private async Task CreateSupportMessage()
+    {
+        await CosmosDbService.CreateSupportMessageAsync(message);
+
+        created = true;
+        message = new SupportMessage();
+    }
+}
