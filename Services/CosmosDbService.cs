@@ -16,14 +16,7 @@ public class CosmosDbService
         _container = database.GetContainer("ibassupport");
     }
 
-    public async Task CreateSupportMessageAsync(SupportMessage message)
-    {
-        await _container.CreateItemAsync(
-            message,
-            new PartitionKey(message.Category));
-    }
-    
-    
+    // Henter alle supporthenvendelser
     public async Task<List<SupportMessage>> GetSupportMessagesAsync()
     {
         var messages = new List<SupportMessage>();
@@ -38,5 +31,38 @@ public class CosmosDbService
         }
 
         return messages;
+    }
+
+    // Henter kun supporthenvendelser fra én kategori
+    public async Task<List<SupportMessage>> GetSupportMsgByCategoryAsync(string category)
+    {
+        var queryDef = new QueryDefinition(
+                "SELECT * FROM c WHERE c.category = @category")
+            .WithParameter("@category", category);
+
+        var query = _container.GetItemQueryIterator<SupportMessage>(
+            queryDef,
+            requestOptions: new QueryRequestOptions
+            {
+                PartitionKey = new PartitionKey(category)
+            });
+
+        var results = new List<SupportMessage>();
+
+        while (query.HasMoreResults)
+        {
+            var response = await query.ReadNextAsync();
+            results.AddRange(response);
+        }
+
+        return results;
+    }
+
+    // Opretter en ny supporthenvendelse
+    public async Task CreateSupportMessageAsync(SupportMessage message)
+    {
+        await _container.CreateItemAsync(
+            message,
+            new PartitionKey(message.Category));
     }
 }

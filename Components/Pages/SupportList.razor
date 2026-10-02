@@ -8,6 +8,19 @@
 
 <h3>Supporthenvendelser</h3>
 
+<div>
+    <label>Vælg kategori:</label>
+
+    <select @onchange="CategoryChanged">
+        <option value="Alle">Alle</option>
+        <option value="Teknisk">Teknisk</option>
+        <option value="Fakturering">Fakturering</option>
+        <option value="Generel">Generel</option>
+    </select>
+</div>
+
+<br />
+
 @if (messages == null)
 {
     <p>Henter henvendelser...</p>
@@ -20,30 +33,30 @@ else
 {
     <table>
         <thead>
-        <tr>
-            <th>Kategori</th>
-            <th>Navn</th>
-            <th>Email</th>
-            <th>Emne</th>
-            <th>Beskrivelse</th>
-            <th>Status</th>
-            <th>Prioritet</th>
-        </tr>
+            <tr>
+                <th>Kategori</th>
+                <th>Navn</th>
+                <th>Email</th>
+                <th>Emne</th>
+                <th>Beskrivelse</th>
+                <th>Status</th>
+                <th>Prioritet</th>
+            </tr>
         </thead>
 
         <tbody>
-        @foreach (var message in messages)
-        {
-            <tr>
-                <td>@message.Category</td>
-                <td>@message.Name</td>
-                <td>@message.Email</td>
-                <td>@message.Subject</td>
-                <td>@message.Description</td>
-                <td>@message.Status</td>
-                <td>@message.Priority</td>
-            </tr>
-        }
+            @foreach (var message in messages)
+            {
+                <tr>
+                    <td>@message.Category</td>
+                    <td>@message.Name</td>
+                    <td>@message.Email</td>
+                    <td>@message.Subject</td>
+                    <td>@message.Description</td>
+                    <td>@message.Status</td>
+                    <td>@message.Priority</td>
+                </tr>
+            }
         </tbody>
     </table>
 }
@@ -54,5 +67,19 @@ else
     protected override async Task OnInitializedAsync()
     {
         messages = await CosmosDbService.GetSupportMessagesAsync();
+    }
+
+    private async Task CategoryChanged(ChangeEventArgs e)
+    {
+        var category = e.Value?.ToString();
+
+        if (category == "Alle")
+        {
+            messages = await CosmosDbService.GetSupportMessagesAsync();
+        }
+        else if (!string.IsNullOrEmpty(category))
+        {
+            messages = await CosmosDbService.GetSupportMsgByCategoryAsync(category);
+        }
     }
 }
